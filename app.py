@@ -8,7 +8,7 @@ import altair as alt
 st.set_page_config(page_title="WomenLead Library Admin", layout="wide")
 
 # -----------------------------
-# Section: Basic login (placeholder logic)
+# Section: Basic login (editable password)
 # -----------------------------
 PASSWORD = "womenlead2025"
 
@@ -20,12 +20,12 @@ if not st.session_state.authenticated:
     password = st.text_input("Enter password to continue:", type="password")
     if password == PASSWORD:
         st.session_state.authenticated = True
-        st.experimental_rerun()
+        st.rerun()  # For Streamlit 1.30+
     else:
         st.stop()
 
 # -----------------------------
-# Style
+# Styling
 # -----------------------------
 st.markdown("""
     <style>
@@ -35,16 +35,6 @@ st.markdown("""
             padding: 20px;
             border-radius: 8px;
             text-align: center;
-        }
-        .section-title {
-            color: #C60C30;
-            font-weight: bold;
-        }
-        .content-box {
-            background-color: #F0F2F6;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -63,12 +53,12 @@ st.markdown("""
 # Sidebar Navigation
 # -----------------------------
 st.sidebar.title("📚 Dashboard Menu")
-page = st.sidebar.radio("Go to", [
+page = st.sidebar.radio("Navigate", [
     "Home", "Content Repository", "Analytics", "Add Content", "Suggestions", "Support Requests", "SharePoint"
 ])
 
 # -----------------------------
-# Session Storage
+# Session Variables
 # -----------------------------
 if "library_df" not in st.session_state:
     st.session_state.library_df = pd.DataFrame(columns=["Title", "Source", "Tags", "Upload Date"])
@@ -83,15 +73,15 @@ if "support_logs" not in st.session_state:
 # Page: Home
 # -----------------------------
 if page == "Home":
-    st.subheader("📖 Welcome to the WomenLead Library Admin Panel")
+    st.subheader("📖 Welcome to the Admin Panel")
     st.markdown("""
-        This dashboard allows you to:
-        - Manage content uploads from multiple platforms (Dropbox, iCollege, Teams)
-        - Suggest new content areas
-        - Track support issues
-        - View analytics on uploads
-        - Export content data
-        - Integrate with SharePoint (preview iframe)
+        This dashboard helps manage the WomenLead Digital Library by:
+        - Uploading & organizing documents
+        - Tracking content sources and tag frequency
+        - Logging support requests
+        - Recommending new content
+        - Exporting data to CSV
+        - Previewing SharePoint links
     """)
 
 # -----------------------------
@@ -144,10 +134,13 @@ elif page == "Analytics":
         st.markdown("#### Most Common Tags")
         all_tags = ", ".join(df["Tags"].dropna()).split(",")
         tag_freq = pd.DataFrame(Counter(tag.strip() for tag in all_tags if tag).most_common(10), columns=["Tag", "Count"])
-        st.bar_chart(tag_freq.set_index("Tag"))
+        if not tag_freq.empty:
+            st.bar_chart(tag_freq.set_index("Tag"))
+        else:
+            st.info("No tags added yet.")
 
 # -----------------------------
-# Page: Add New Content
+# Page: Add Content
 # -----------------------------
 elif page == "Add Content":
     st.subheader("➕ Suggest New Content Area")
@@ -187,11 +180,10 @@ elif page == "Support Requests":
         st.table(pd.DataFrame(st.session_state.support_logs))
 
 # -----------------------------
-# Page: SharePoint Integration
+# Page: SharePoint
 # -----------------------------
 elif page == "SharePoint":
-    st.subheader("🔗 SharePoint Integration (Placeholder)")
-
+    st.subheader("🔗 SharePoint Integration (Preview)")
     st.markdown("""
         <iframe src="https://gsu.sharepoint.com" width="100%" height="500px" style="border: 2px solid #003366; border-radius: 8px;"></iframe>
     """, unsafe_allow_html=True)
